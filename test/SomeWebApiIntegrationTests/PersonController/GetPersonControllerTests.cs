@@ -29,6 +29,7 @@ public sealed class GetPersonControllerTests : IClassFixture<IntegrationTestFact
 
         // Assert
         // response.Should().BeEquivalentTo(user);
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created, "we expect a person to be created");
+        response.EnsureSuccessStatusCode();
     }
 }
