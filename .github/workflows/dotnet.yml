@@ -22,6 +22,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+      run: dotnet test --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Exclude="**/Migrations"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
