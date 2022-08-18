@@ -54,6 +54,8 @@ public class PersonController : ControllerBase
             return NotFound(id);
         }
 
+        sqlServerContext.Remove(user);
+        sqlServerContext.SaveChanges();
         return NoContent();
     }
 }

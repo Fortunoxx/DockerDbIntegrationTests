@@ -1,5 +1,6 @@
 namespace SomeWebApiIntegrationTests;
 
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
@@ -7,6 +8,7 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -14,6 +16,9 @@ using Xunit;
 public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactory<TProgram>, IAsyncLifetime
     where TProgram : class where TDbContext : DbContext
 {
+    private const string PathToMigrations = "../../../../Database/Migrations";
+    private const string PathToTestData = "../../../../Database/SeedData";
+
     private readonly TestcontainerDatabase _container;
 
     public IntegrationTestFactory()
@@ -39,7 +44,22 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
         });
     }
 
-    public async Task InitializeAsync() => await _container.StartAsync();
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
+        FillDatabase();
+    }
 
     public new async Task DisposeAsync() => await _container.DisposeAsync();
+
+    private void FillDatabase()
+    {
+        var conn = new SqlConnection(_container.ConnectionString);
+
+        var evolve = new Evolve.Evolve(conn, msg => Debug.WriteLine(msg))
+        {
+            Locations = new[] { PathToMigrations, PathToTestData }
+        };
+        evolve.Migrate();
+    }
 }
