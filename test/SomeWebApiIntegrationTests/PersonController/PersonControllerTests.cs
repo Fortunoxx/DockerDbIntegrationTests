@@ -92,6 +92,34 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent, "this PUT method should have no content");
         response.EnsureSuccessStatusCode();
     }
+
+    [Fact]
+    public async Task Delete_Person_Should_Fail_No_Person_Found_Async()
+    {
+        // Arrange 
+        var client = _factory.CreateClient();
+
+        // Act
+        var response = await client.DeleteAsync("person/-1");
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound, "this person should not exist");
+    }
+
+    [Fact]
+    public async Task Update_Person_Should_Fail_No_Person_Found_Async()
+    {
+        // Arrange 
+        var client = _factory.CreateClient();
+        var user = new Fixture().Create<UpsertUser>();
+        var body = JsonConvert.SerializeObject(user);
+
+        // Act
+        var response = await client.PutAsync("person/-2", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound, "this person should not exist");
+    }
 }
 
 public sealed class WeatherForecastControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
