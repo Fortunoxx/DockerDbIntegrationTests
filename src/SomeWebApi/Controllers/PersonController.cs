@@ -36,7 +36,7 @@ public class PersonController : ControllerBase
     }
 
     [HttpPost(Name = "CreatePerson")]
-    public async Task<ActionResult> CreatePerson([FromBody] UserForCreate person)
+    public async Task<ActionResult> CreatePerson([FromBody] UpsertUser person)
     {
         var user = mapper.Map<User>(person);
         sqlServerContext.Users.Add(user);
@@ -55,6 +55,21 @@ public class PersonController : ControllerBase
         }
 
         sqlServerContext.Remove(user);
+        sqlServerContext.SaveChanges();
+        return NoContent();
+    }
+
+    [HttpPut("{id}", Name = "UpdatePerson")]
+    public ActionResult UpdatePerson([FromBody] UpsertUser user, int id)
+    {
+        var dbuser = sqlServerContext.Find<User>(id);
+        if (dbuser is null)
+        {
+            return NotFound(id);
+        }
+
+        dbuser = mapper.Map(user, dbuser);
+        sqlServerContext.Update(dbuser);
         sqlServerContext.SaveChanges();
         return NoContent();
     }
