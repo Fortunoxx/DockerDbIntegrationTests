@@ -19,7 +19,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task GetPersons_ResturnsValidResult_Async()
+    public async Task GetPersons_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -33,7 +33,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task GetPerson_ResturnsValidResult_Async()
+    public async Task GetPerson_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -47,7 +47,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Create_Person_ResturnsValidResult_Async()
+    public async Task Create_Person_Returns_Valid_Result_Async()
     {
         // Arrange 
         var user = new Fixture().Create<UpsertUser>();
@@ -64,7 +64,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Delete_Person_ResturnsValidResult_Async()
+    public async Task Delete_Person_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -78,7 +78,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Update_Person_ResturnsValidResult_Async()
+    public async Task Update_Person_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -119,27 +119,5 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound, "this person should not exist");
-    }
-}
-
-public sealed class WeatherForecastControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
-{
-    private readonly IntegrationTestFactory<Program, SqlServerContext> _factory;
-
-    public WeatherForecastControllerTests(IntegrationTestFactory<Program, SqlServerContext> factory)
-        => _factory = factory;
-
-    [Fact]
-    public async Task GetWeatherForecast_ResturnsValidResult()
-    {
-        // Arrange 
-        var client = _factory.CreateClient();
-
-        // Act
-        var response = await client.GetAsync("WeatherForecast");
-
-        // Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK, "we like success");
-        response.EnsureSuccessStatusCode();
     }
 }
