@@ -29,11 +29,6 @@ public class ProcessActivity :
             throw new RoutingSlipException($"The Id number is invalid: {context.Arguments.Id}");
         }
 
-        // return Task.FromResult(context.CompletedWithVariables(new
-        // {
-        //     ExpirationDate = DateTime.Today.AddDays(10)
-        // }));
-
         return context.Completed<ProcessActivityLog>(new () { LogIds = new [] { Guid.NewGuid() }});
     }
 }
