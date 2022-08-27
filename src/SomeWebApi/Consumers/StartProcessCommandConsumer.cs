@@ -7,21 +7,19 @@ using SomeWebApi.Courier.Helper;
 
 public class StartProcessCommandConsumer : IConsumer<IStartProcessCommand>
 {
-    private readonly ICourierService courierHelper;
-    private readonly IEndpointNameFormatter endpointNameFormatter;
+    private readonly ICourierService courierService;
     private readonly ILogger<StartProcessCommandConsumer> logger;
 
-    public StartProcessCommandConsumer(ICourierService courierHelper, IEndpointNameFormatter endpointNameFormatter, ILogger<StartProcessCommandConsumer> logger)
+    public StartProcessCommandConsumer(ICourierService courierService, ILogger<StartProcessCommandConsumer> logger)
     {
-        this.courierHelper = courierHelper;
-        this.endpointNameFormatter = endpointNameFormatter;
+        this.courierService = courierService;
         this.logger = logger;
     }
 
     public async Task Consume(ConsumeContext<IStartProcessCommand> context)
     {
         var builder = new RoutingSlipBuilder(NewId.NextGuid());
-        builder.AddActivity("StartProcess", courierHelper.GetActivityAddress<ProcessActivity, ProcessActivityArguments>(), new
+        builder.AddActivity("StartProcess", courierService.GetActivityAddress<ProcessActivity, ProcessActivityArguments>(), new
         {
             ProcessName = context.Message.ProcessName,
             Id = context.Message.Id

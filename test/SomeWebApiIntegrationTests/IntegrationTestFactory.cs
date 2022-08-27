@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -40,6 +41,7 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
             {
                 options.UseSqlServer(_container.ConnectionString);
             });
+            services.AddMassTransitRabbitMqTestHarness();
             services.EnsureDbCreated<TDbContext>();
         });
     }

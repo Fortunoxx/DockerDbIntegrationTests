@@ -19,7 +19,7 @@ public class ProcessActivity :
         return Task.FromResult(context.Compensated());
     }
 
-    public async Task<ExecutionResult> Execute(ExecuteContext<ProcessActivityArguments> context)
+    public Task<ExecutionResult> Execute(ExecuteContext<ProcessActivityArguments> context)
     {
         logger.LogInformation("Verifying Id: {0}", context.Arguments.Id);
 
@@ -29,6 +29,6 @@ public class ProcessActivity :
             throw new RoutingSlipException($"The Id number is invalid: {context.Arguments.Id}");
         }
 
-        return context.Completed<ProcessActivityLog>(new () { LogIds = new [] { Guid.NewGuid() }});
+        return Task.FromResult(context.Completed<ProcessActivityLog>(new() { LogIds = new[] { Guid.NewGuid() } }));
     }
 }

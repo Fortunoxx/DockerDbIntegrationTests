@@ -14,7 +14,6 @@ public class ProcessController : ControllerBase
     private readonly IMapper mapper;
     private readonly IRequestClient<IStartProcessCommand> startProcessCommandConsumer;
     private readonly SqlServerContext sqlServerContext;
-    private readonly IEndpointNameFormatter endpointNameFormatter;
 
     public ProcessController(ILogger<PersonController> logger, IMapper mapper, IRequestClient<IStartProcessCommand> startProcessCommandConsumer, SqlServerContext sqlServerContext)
     {
@@ -31,7 +30,7 @@ public class ProcessController : ControllerBase
 
         if (response.Is(out Response<IAcceptedResponse> accepted))
         {
-            return Ok(new { response.ConversationId, accepted.Message.Timestamp });
+            return Ok(new { response.ConversationId, accepted?.Message.Timestamp });
         }
 
         return BadRequest();

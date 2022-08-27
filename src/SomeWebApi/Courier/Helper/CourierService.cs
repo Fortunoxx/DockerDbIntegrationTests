@@ -16,7 +16,6 @@ public class CourierService : ICourierService
         where TArguments : class
     {
         var name = endpointNameFormatter.ExecuteActivity<TActivity, TArguments>();
-        // return new Uri($"exchange:{name}");
         return new Uri($"queue:{name}");
     }
 }
