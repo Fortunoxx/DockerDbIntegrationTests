@@ -17,6 +17,7 @@ public sealed class ProcessActivityTests
     public async Task Process_Should_Work_Async()
     {
         await using var provider = new ServiceCollection()
+            .AddMassTransitRabbitMqTestHarness()
             .AddMassTransitTestHarness(x =>
             {
                 x.SetKebabCaseEndpointNameFormatter();
@@ -56,6 +57,7 @@ public sealed class ProcessActivityTests
     public async Task Process_With_Compensation_Should_Work_Async()
     {
         await using var provider = new ServiceCollection()
+            .AddMassTransitRabbitMqTestHarness()
             .AddMassTransitTestHarness(x =>
             {
                 x.SetKebabCaseEndpointNameFormatter();
