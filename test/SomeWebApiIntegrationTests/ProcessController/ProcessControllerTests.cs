@@ -15,19 +15,19 @@ public sealed class ProcessControllerTests : IClassFixture<IntegrationTestFactor
         _factory = factory;
     }
 
-    [Fact]
-    public async Task Start_Process_Should_Execute_RoutingSlip_Async()
-    {
-        // Arrange 
-        var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(1);
-        var body = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
-        var client = _factory.CreateClient();
+    // [Fact]
+    // public async Task Start_Process_Should_Execute_RoutingSlip_Async()
+    // {
+    //     // Arrange 
+    //     var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(1);
+    //     var body = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+    //     var client = _factory.CreateClient();
 
-        // Act
-        var response = await client.PostAsync("process", body);
+    //     // Act
+    //     var response = await client.PostAsync("process", body);
 
-        // Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK, "process should have been started");
-        response.EnsureSuccessStatusCode();
-    }
+    //     // Assert
+    //     response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK, "process should have been started");
+    //     response.EnsureSuccessStatusCode();
+    // }
 }

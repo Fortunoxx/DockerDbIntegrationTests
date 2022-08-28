@@ -41,7 +41,6 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
             {
                 options.UseSqlServer(_container.ConnectionString);
             });
-            services.AddMassTransitRabbitMqTestHarness();
             services.EnsureDbCreated<TDbContext>();
         });
     }
