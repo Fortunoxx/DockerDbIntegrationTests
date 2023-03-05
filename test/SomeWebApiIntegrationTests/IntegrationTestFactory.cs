@@ -29,6 +29,7 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
             {
                 Password = "P@55w0rd"
             })
+            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
             .Build();
     }
 

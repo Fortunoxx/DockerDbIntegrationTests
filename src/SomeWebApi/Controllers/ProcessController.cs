@@ -28,7 +28,7 @@ public class ProcessController : ControllerBase
     {
         var response = await startProcessCommandConsumer.GetResponse<IAcceptedResponse, IFaultedResponse>(new { ProcessName = "StartProcess", Id = id });
 
-        if (response.Is(out Response<IAcceptedResponse> accepted))
+        if (response.Is(out Response<IAcceptedResponse>? accepted))
         {
             return Ok(new { response.ConversationId, accepted?.Message.Timestamp });
         }
