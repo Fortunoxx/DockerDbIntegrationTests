@@ -14,7 +14,7 @@ using AutoFixture;
 public sealed class ProcessActivityTests
 {
     [Fact]
-    public async Task Process_Should_Work_Async()
+    internal async Task Process_Should_Work_Async()
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitRabbitMqTestHarness()
@@ -47,7 +47,7 @@ public sealed class ProcessActivityTests
     }
 
     [Fact]
-    public async Task Process_With_Compensation_Should_Work_Async()
+    internal async Task Process_With_Compensation_Should_Work_Async()
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitRabbitMqTestHarness()

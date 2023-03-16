@@ -13,7 +13,7 @@ public sealed class WeatherForecastControllerTests : IClassFixture<IntegrationTe
         => _factory = factory;
 
     [Fact]
-    public async Task GetWeatherForecast_Returns_Valid_Result()
+    internal async Task GetWeatherForecast_Returns_Valid_Result()
     {
         // Arrange 
         var client = _factory.CreateClient();

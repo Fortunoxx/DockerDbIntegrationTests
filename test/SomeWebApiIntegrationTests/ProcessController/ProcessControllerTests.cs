@@ -5,6 +5,7 @@ using Xunit;
 using FluentAssertions;
 using SomeWebApi.Database;
 using System.Net.Http;
+using System.Net.Mime;
 
 public sealed class ProcessControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
 {
@@ -16,11 +17,11 @@ public sealed class ProcessControllerTests : IClassFixture<IntegrationTestFactor
     }
 
     [Fact]
-    public async Task Start_Process_Should_Execute_RoutingSlip_Async()
+    internal async Task Start_Process_Should_Execute_RoutingSlip_Async()
     {
         // Arrange 
         var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(1);
-        var body = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+        var body = new StringContent(jsonBody, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json);
         var client = _factory.CreateClient();
 
         // Act

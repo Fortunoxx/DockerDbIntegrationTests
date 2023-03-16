@@ -14,7 +14,7 @@ using Xunit;
 public sealed class ProcessConsumerTests
 {
     [Fact]
-    public async Task StartProcessCommandConsumer_Should_Succed_Async()
+    internal async Task StartProcessCommandConsumer_Should_Succed_Async()
     {
         // Arrange
         await using var provider = new ServiceCollection()

@@ -8,6 +8,7 @@ using System.Net.Http;
 using FluentAssertions;
 using SomeWebApi.Database;
 using Newtonsoft.Json;
+using System.Net.Mime;
 
 public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
 {
@@ -19,7 +20,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task GetPersons_Returns_Valid_Result_Async()
+    internal async Task GetPersons_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -33,7 +34,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task GetPerson_Returns_Valid_Result_Async()
+    internal async Task GetPerson_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -47,12 +48,12 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Create_Person_Returns_Valid_Result_Async()
+    internal async Task Create_Person_Returns_Valid_Result_Async()
     {
         // Arrange 
         var user = new Fixture().Create<UpsertUser>();
         var jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(user);
-        var body = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+        var body = new StringContent(jsonBody, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json);
         var client = _factory.CreateClient();
 
         // Act
@@ -64,7 +65,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Delete_Person_Returns_Valid_Result_Async()
+    internal async Task Delete_Person_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -78,7 +79,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Update_Person_Returns_Valid_Result_Async()
+    internal async Task Update_Person_Returns_Valid_Result_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -86,7 +87,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
         var body = JsonConvert.SerializeObject(user);
 
         // Act
-        var response = await client.PutAsync("person/2", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        var response = await client.PutAsync("person/2", new StringContent(body, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json));
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent, "this PUT method should have no content");
@@ -94,7 +95,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Delete_Person_Should_Fail_No_Person_Found_Async()
+    internal async Task Delete_Person_Should_Fail_No_Person_Found_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -107,7 +108,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
     }
 
     [Fact]
-    public async Task Update_Person_Should_Fail_No_Person_Found_Async()
+    internal async Task Update_Person_Should_Fail_No_Person_Found_Async()
     {
         // Arrange 
         var client = _factory.CreateClient();
@@ -115,7 +116,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
         var body = JsonConvert.SerializeObject(user);
 
         // Act
-        var response = await client.PutAsync("person/-2", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        var response = await client.PutAsync("person/-2", new StringContent(body, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json));
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound, "this person should not exist");
