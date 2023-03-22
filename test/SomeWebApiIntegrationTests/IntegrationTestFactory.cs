@@ -2,9 +2,6 @@ namespace SomeWebApiIntegrationTests;
 
 using System.Diagnostics;
 using System.Threading.Tasks;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -12,6 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Testcontainers.MsSql;
 using Xunit;
 
 public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactory<TProgram>, IAsyncLifetime
@@ -19,29 +17,14 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
 {
     private const string PathToMigrations = "../../../../Database/Migrations";
     private const string PathToTestData = "../../../../Database/SeedData";
-
-    private readonly TestcontainerDatabase _container;
-
-    public IntegrationTestFactory()
-    {
-        _container = new TestcontainersBuilder<MsSqlTestcontainer>()
-            .WithDatabase(new MsSqlTestcontainerConfiguration
-            {
-                Password = "P@55w0rd"
-            })
-            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-            .Build();
-    }
+    private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<TDbContext>();
-            services.AddDbContext<TDbContext>(options =>
-            {
-                options.UseSqlServer(_container.ConnectionString);
-            });
+            services.AddDbContext<TDbContext>(options => options.UseSqlServer(_container.GetConnectionString()));
             services.EnsureDbCreated<TDbContext>();
             services.AddMassTransitTestHarness();
         });
@@ -57,9 +40,9 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
 
     private void FillDatabase()
     {
-        var conn = new SqlConnection(_container.ConnectionString);
+        var conn = new SqlConnection(_container.GetConnectionString());
 
-        var evolve = new Evolve.Evolve(conn, msg => Debug.WriteLine(msg))
+        var evolve = new EvolveDb.Evolve(conn, msg => Debug.WriteLine(msg))
         {
             Locations = new[] { PathToMigrations, PathToTestData }
         };
