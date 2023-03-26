@@ -13,13 +13,13 @@ public class ProcessActivity :
         this.logger = logger;
     }
 
-    public Task<CompensationResult> Compensate(CompensateContext<ProcessActivityLog> context)
+    public async Task<CompensationResult> Compensate(CompensateContext<ProcessActivityLog> context)
     {
         context.Log.LogIds.ToList().ForEach(x => logger.LogWarning($"Compensation: deleting id {x}"));
-        return Task.FromResult(context.Compensated());
+        return context.Compensated();
     }
 
-    public Task<ExecutionResult> Execute(ExecuteContext<ProcessActivityArguments> context)
+    public async Task<ExecutionResult> Execute(ExecuteContext<ProcessActivityArguments> context)
     {
         logger.LogInformation("Verifying Id: {0}", context.Arguments.Id);
 
@@ -29,6 +29,8 @@ public class ProcessActivity :
             throw new RoutingSlipException($"The Id number is invalid: {context.Arguments.Id}");
         }
 
-        return Task.FromResult(context.Completed<ProcessActivityLog>(new() { LogIds = new[] { Guid.NewGuid() } }));
+        await Task.Delay(10);
+
+        return context.Completed<ProcessActivityLog>(new { LogIds = new[] { Guid.NewGuid() } });
     }
 }
