@@ -90,4 +90,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-public partial class Program { } // this part
+
+public partial class Program { } // Der Zugriff auf "Program" ist aufgrund des Schutzgrads nicht möglich.

@@ -1,4 +1,4 @@
-namespace SomeWebApiIntegrationTests.ProcessController;
+namespace SomeWebApiUnitTests.ProcessControllerUnitTests;
 
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -11,7 +11,7 @@ using SomeWebApi.Contracts;
 using SomeWebApi.Courier.Helper;
 using Xunit;
 
-public sealed class ProcessConsumerTests
+public sealed class ProcessConsumerUnitTests
 {
     [Fact]
     internal async Task StartProcessCommandConsumer_Should_Succed_Async()
