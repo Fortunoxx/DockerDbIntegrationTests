@@ -10,12 +10,12 @@ using SomeWebApi.Database;
 [Route("[controller]")]
 public class ProcessController : ControllerBase
 {
-    private readonly ILogger<PersonController> logger;
+    private readonly ILogger<ProcessController> logger;
     private readonly IMapper mapper;
     private readonly IRequestClient<IStartProcessCommand> startProcessCommandConsumer;
     private readonly SqlServerContext sqlServerContext;
 
-    public ProcessController(ILogger<PersonController> logger, IMapper mapper, IRequestClient<IStartProcessCommand> startProcessCommandConsumer, SqlServerContext sqlServerContext)
+    public ProcessController(ILogger<ProcessController> logger, IMapper mapper, IRequestClient<IStartProcessCommand> startProcessCommandConsumer, SqlServerContext sqlServerContext)
     {
         this.logger = logger;
         this.mapper = mapper;

@@ -5,6 +5,5 @@ using SomeWebApi.Model;
 
 public class ServiceMappings : Profile
 {
-    public ServiceMappings() => CreateMap<UpsertUser, User>().ReverseMap();
-
+    public ServiceMappings() => CreateMap<User, UpsertUser>().ReverseMap();
 }
