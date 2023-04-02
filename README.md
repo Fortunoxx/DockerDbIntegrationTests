@@ -7,3 +7,5 @@ A sample project that performs integration tests with a one-time database (MS SQ
 ## Literature
 - [Fix for warning CS8618](https://docs.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types)
 - [Testcontainers example](https://www.azureblue.io/asp-net-core-integration-tests-with-test-containers-and-postgres/)
+- [Refit](https://github.com/reactiveui/refit)
+- [Polly](https://github.com/App-vNext/Polly)
