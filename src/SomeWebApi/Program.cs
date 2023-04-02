@@ -14,7 +14,6 @@ using SomeWebApi.Database;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -29,7 +28,7 @@ var connectionStrings = builder.Configuration
     .GetSection(ConnectionStrings.ConfigSectionName)
     .Get<ConnectionStrings>();
 
-builder.Services.AddDbContext<SqlServerContext>(options => options.UseSqlServer(connectionStrings.SqlServerConnectionString));
+builder.Services.AddDbContext<SqlServerContext>(options => options.UseSqlServer(connectionStrings?.SqlServerConnectionString));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddMassTransit(x =>
 {
@@ -38,7 +37,7 @@ builder.Services.AddMassTransit(x =>
     x.AddExecuteActivity<ProcessActivity, ProcessActivityArguments>();
 
     x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
-    //* when using rabbitmq...
+    //! when using rabbitmq...
     // x.UsingRabbitMq((context, cfg) =>
     // {
     //     cfg.Host("localhost", "/", h =>
@@ -91,4 +90,4 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program { } // Der Zugriff auf "Program" ist aufgrund des Schutzgrads nicht möglich.
+public partial class Program { } //* for integration tests

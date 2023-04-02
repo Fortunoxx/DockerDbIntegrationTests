@@ -4,5 +4,5 @@ public record ConnectionStrings
 {
     public static string ConfigSectionName => "ConnectionStrings";
 
-    public string SqlServerConnectionString { get; init; }
+    public required string SqlServerConnectionString { get; init; }
 }

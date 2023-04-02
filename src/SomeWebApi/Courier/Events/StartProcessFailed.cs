@@ -4,7 +4,9 @@ using MassTransit;
 
 public record StartProcessFailed
 {
-    int Id { get; }
-    string ProcessName { get; }
-    public ExceptionInfo ExceptionInfo { get; init; }
+    public int Id { get; init; }
+
+    public required string ProcessName { get; init; }
+    
+    public ExceptionInfo? ExceptionInfo { get; init; }
 }

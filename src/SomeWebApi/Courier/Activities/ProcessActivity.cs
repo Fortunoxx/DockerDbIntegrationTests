@@ -13,10 +13,10 @@ public class ProcessActivity :
         this.logger = logger;
     }
 
-    public async Task<CompensationResult> Compensate(CompensateContext<ProcessActivityLog> context)
+    public Task<CompensationResult> Compensate(CompensateContext<ProcessActivityLog> context)
     {
         context.Log.LogIds.ToList().ForEach(x => logger.LogWarning($"Compensation: deleting id {x}"));
-        return context.Compensated();
+        return Task.FromResult(context.Compensated());
     }
 
     public async Task<ExecutionResult> Execute(ExecuteContext<ProcessActivityArguments> context)
