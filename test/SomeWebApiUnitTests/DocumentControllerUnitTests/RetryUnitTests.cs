@@ -23,8 +23,9 @@ public class RetryUnitTests
 
         var documentService = Substitute.For<IDocumentApi>();
         documentService.GetPdfFileAsync(string.Empty).ThrowsAsyncForAnyArgs(new TimeoutRejectedException());
-        documentService.GetPdfFileAsync("2").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.RequestTimeout));
-        documentService.GetPdfFileAsync("3").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.GatewayTimeout));
+        documentService.GetPdfFileAsync("0").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.BadGateway));
+        documentService.GetPdfFileAsync("1").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.RequestTimeout));
+        documentService.GetPdfFileAsync("2").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.GatewayTimeout));
         // documentService.GetPdfFileAsync("4").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         documentService.GetPdfFileAsync($"{retry}").Returns(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
 
@@ -49,7 +50,7 @@ public class RetryUnitTests
             .Or<TimeoutRejectedException>()
             .WaitAndRetryAsync(retry, retryAttempt => TimeSpan.FromMilliseconds(wait),
                 onRetry: (outcome, timespan, retryAttempt, context) => 
-                    Trace.WriteLine($"*** Delaying for {timespan.TotalMilliseconds}ms, then making retry #{retryAttempt}" )
+                    Trace.WriteLine($"*** Delaying for {timespan.TotalMilliseconds}ms, then making retry #{retryAttempt} | {outcome.Result?.StatusCode.ToString() ?? outcome.Exception.GetType().ToString()}" )
                 );
 
         return new PolicyRegistry {
