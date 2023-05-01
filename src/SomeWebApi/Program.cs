@@ -4,6 +4,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
 using Refit;
+using Serilog;
 using SomeWebApi.Configuration;
 using SomeWebApi.Consumers;
 using SomeWebApi.Contracts.APIs;
@@ -12,6 +13,9 @@ using SomeWebApi.Courier.Helper;
 using SomeWebApi.Database;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// add serilog logging
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -58,7 +62,14 @@ var waitAndRetryConfig = builder.Configuration
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .Or<TimeoutRejectedException>() // Thrown by Polly's TimeoutPolicy if the inner call gets timeout.
-    .WaitAndRetryAsync(waitAndRetryConfig!.Retry, _ => TimeSpan.FromMilliseconds(waitAndRetryConfig!.Wait));
+    .WaitAndRetryAsync(waitAndRetryConfig!.Retry, _ => TimeSpan.FromMilliseconds(waitAndRetryConfig!.Wait), 
+        onRetry: (outcome, timespan, retryAttempt) =>
+        {
+            Console.WriteLine("*** Delaying for {delay}ms, then making retry #{retryAttempt}");
+            // Log.Information("Delaying for {delay}ms, then making retry #{retryAttempt}}", timespan.TotalMilliseconds, retryAttempt);
+            // builder.Services.BuildServiceProvider().GetService<ILogger<IDocumentApi>>()?
+            //     .LogWarning("Delaying for {delay}ms, then making retry {retry}.", timespan.TotalMilliseconds, retryAttempt);
+        });
 
 var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromMilliseconds(waitAndRetryConfig!.Timeout));
 
@@ -81,6 +92,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
