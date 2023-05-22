@@ -49,12 +49,12 @@ public sealed class ProcessActivityTests
     internal async Task Process_Should_Fail_Invalid_Id_Async()
     {
         await using var provider = new ServiceCollection()
-          .AddMassTransitTestHarness(x =>
-          {
-              x.SetKebabCaseEndpointNameFormatter();
-              x.AddActivity<ProcessActivity, ProcessActivityArguments, ProcessActivityLog>();
-          })
-          .BuildServiceProvider(true);
+            .AddMassTransitTestHarness(x =>
+                {
+                    x.SetKebabCaseEndpointNameFormatter();
+                    x.AddActivity<ProcessActivity, ProcessActivityArguments, ProcessActivityLog>();
+                })
+            .BuildServiceProvider(true);
 
         var harness = provider.GetTestHarness();
 

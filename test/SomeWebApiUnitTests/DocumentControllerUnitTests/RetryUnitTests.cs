@@ -1,14 +1,15 @@
 namespace SomeWebApiUnitTests.ProcessControllerUnitTests;
+
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using Polly;
-using Xunit;
-using Polly.Registry;
-using Polly.Timeout;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using SomeWebApi.Contracts.APIs;
 using Polly.Extensions.Http;
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+using Polly.Registry;
+using Polly.Timeout;
+using Xunit;
+using SomeWebApi.Contracts.APIs;
 
 public class RetryUnitTests
 {
@@ -49,8 +50,8 @@ public class RetryUnitTests
             .HandleTransientHttpError()
             .Or<TimeoutRejectedException>()
             .WaitAndRetryAsync(retry, retryAttempt => TimeSpan.FromMilliseconds(wait),
-                onRetry: (outcome, timespan, retryAttempt, context) => 
-                    Trace.WriteLine($"*** Delaying for {timespan.TotalMilliseconds}ms, then making retry #{retryAttempt} | {outcome.Result?.StatusCode.ToString() ?? outcome.Exception.GetType().ToString()}" )
+                onRetry: (outcome, timespan, retryAttempt, context) =>
+                    Trace.WriteLine($"*** Delaying for {timespan.TotalMilliseconds}ms, then making retry #{retryAttempt} | {outcome.Result?.StatusCode.ToString() ?? outcome.Exception.GetType().ToString()}")
                 );
 
         return new PolicyRegistry {
