@@ -1,7 +1,10 @@
 namespace SomeWebApiIntegrationTests;
 
+using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
+using DotNet.Testcontainers.Containers;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -9,6 +12,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SqlServer.Dac;
 using Testcontainers.MsSql;
 using Xunit;
 
@@ -17,7 +21,9 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
 {
     private const string PathToMigrations = "../../../../Database/Migrations";
     private const string PathToTestData = "../../../../Database/SeedData";
-    private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
+    private readonly MsSqlContainer _container = new MsSqlBuilder().WithImage("mcr.microsoft.com/mssql/server:2022-latest").Build();
+
+    private readonly string deployScriptPath = "../../../../Database/data/deployment_script.temp.sql";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -33,19 +39,94 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
     public async Task InitializeAsync()
     {
         await _container.StartAsync();
-        FillDatabase();
+        await FillDatabase(true);
     }
 
     public new async Task DisposeAsync() => await _container.DisposeAsync();
 
-    private void FillDatabase()
+    private async Task FillDatabase(bool useDacPac)
     {
         var conn = new SqlConnection(_container.GetConnectionString());
+
+        if (useDacPac)
+        {
+            await FillDbFromDacpac();
+            return;
+        }
 
         var evolve = new EvolveDb.Evolve(conn, msg => Debug.WriteLine(msg))
         {
             Locations = new[] { PathToMigrations, PathToTestData }
         };
         evolve.Migrate();
+    }
+
+    private async Task FillDbFromDacpac()
+    {
+        using var dacpacStream = System.IO.File.Open("../../../../Database/StackOverflow2010.dacpac", System.IO.FileMode.Open);
+        using DacPackage dacPackage = DacPackage.Load(dacpacStream);
+
+        var dacService = new DacServices(_container.GetConnectionString());
+
+        try
+        {
+            var deployScriptContent = dacService.GenerateDeployScript(dacPackage, "DACDB", new DacDeployOptions { IgnoreDefaultSchema = true, });
+            System.IO.File.WriteAllText(deployScriptPath, deployScriptContent);
+            await ReadSqlDeployScriptCopyAndExecInDockerContainerAsync(deployScriptContent);
+        }
+        catch(Exception ex)
+        {
+            throw;
+        }
+
+    }
+
+    private async Task ReadSqlDeployScriptCopyAndExecInDockerContainerAsync(string deployScript = null)
+    {
+        if (deployScript == null)
+        {
+            deployScript = System.IO.File.ReadAllText(deployScriptPath);
+        }
+
+        var execResult = await this.CopyAndExecSqlDbCreateScriptContainerAsync(deployScript);
+
+        const int successExitCode = 0;
+        if (execResult.ExitCode != successExitCode)
+        {
+            throw new System.Exception(execResult.Stderr);
+        }
+    }
+
+    public async Task<ExecResult> CopyAndExecSqlDbCreateScriptContainerAsync(string scriptContent, CancellationToken ct = default)
+    {
+        var constants = new
+        {
+            DefaultDataPathLinux = "/var/opt/mssql/data/",
+            DefaultLogPathLinux = "/var/opt/mssql/log/",
+            DefaultDataPathSqlEnvVar = "data",
+            DefaultLogPathSqlEnvVar = "log",
+            DatabaseName = "StackOverflow2010_TC",
+            DefaultFilePrefix = "SOTC",
+            DockerSqlDeployScriptPath = "/var/opt/mssql/script.sql",
+            SqlServerDefaultConnection = "127.0.0.1,1433",
+        };
+
+        await this._container.CopyFileAsync(constants.DockerSqlDeployScriptPath, System.Text.Encoding.Default.GetBytes(scriptContent), 493, 0, 0, ct).ConfigureAwait(false);
+
+        var sqlConnection = new SqlConnectionStringBuilder(this._container.GetConnectionString());
+
+        string[] sqlCmds = new[]
+        {
+            "/opt/mssql-tools/bin/sqlcmd", "-b", "-r", "1",
+            // "-S", sqlConnection.DataSource,
+            "-S", constants.SqlServerDefaultConnection,
+            "-U", sqlConnection.UserID, "-P", sqlConnection.Password,
+            "-i", constants.DockerSqlDeployScriptPath,
+            "-v", $"{constants.DefaultDataPathSqlEnvVar}={constants.DefaultDataPathLinux} {constants.DefaultLogPathSqlEnvVar}={constants.DefaultLogPathLinux}"
+        };
+
+        ExecResult execResult = await this._container.ExecAsync(sqlCmds, ct).ConfigureAwait(false);
+
+        return execResult;
     }
 }
