@@ -87,7 +87,7 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
         var process = new Process {
             StartInfo = new ProcessStartInfo()
             {
-                FileName = "SqlPackage.exe",
+                FileName = "SqlPackage",
                 Arguments = string.Join(" ", arguments),
                 UseShellExecute = false
             }
