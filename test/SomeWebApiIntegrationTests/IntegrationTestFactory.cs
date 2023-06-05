@@ -39,29 +39,64 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
     public async Task InitializeAsync()
     {
         await _container.StartAsync();
-        await FillDatabase(true);
+        FillDatabase(true);
     }
 
     public new async Task DisposeAsync() => await _container.DisposeAsync();
 
-    private async Task FillDatabase(bool useDacPac)
+    private void FillDatabase(bool useDacPac)
     {
-        var conn = new SqlConnection(_container.GetConnectionString());
+        var connectionString = _container.GetConnectionString();
 
         if (useDacPac)
         {
-            await FillDbFromDacpac();
+            var dbName = "TestDB";
+            var builder = new SqlConnectionStringBuilder(connectionString);
+
+            FillDbFromDacpac(builder, dbName);
+
+            builder.InitialCatalog = dbName;
+            var connection = new SqlConnection(builder.ConnectionString);
+            var evolveDacPac = new EvolveDb.Evolve(connection, msg => Debug.WriteLine(msg))
+            {
+                Locations = new [] { PathToTestData, }
+            };
+            evolveDacPac.Migrate();
             return;
         }
-
-        var evolve = new EvolveDb.Evolve(conn, msg => Debug.WriteLine(msg))
+        
+        var evolve = new EvolveDb.Evolve(new SqlConnection(connectionString), msg => Debug.WriteLine(msg))
         {
             Locations = new[] { PathToMigrations, PathToTestData }
         };
         evolve.Migrate();
     }
 
-    private async Task FillDbFromDacpac()
+    private void FillDbFromDacpac(SqlConnectionStringBuilder connectionStringBuilder, string databaseName)
+    {
+        var arguments = new[] {
+            "/Action:Publish",
+            "/SourceFile:\"../../../../Database/StackOverflow2010.dacpac\"",
+            $"/TargetUser:{connectionStringBuilder.UserID}",
+            $"/TargetPassword:{connectionStringBuilder.Password}",
+            $"/TargetServerName:{connectionStringBuilder.DataSource}",
+            $"/TargetTrustServerCertificate:{connectionStringBuilder.TrustServerCertificate}",
+            $"/TargetDatabaseName:{databaseName}",
+        };
+
+        var process = new Process {
+            StartInfo = new ProcessStartInfo()
+            {
+                FileName = "SqlPackage.exe",
+                Arguments = string.Join(" ", arguments),
+                UseShellExecute = false
+            }
+        };
+        process.Start();
+        process.WaitForExit();
+    }
+
+    private async Task FillDbFromDacpac2()
     {
         using var dacpacStream = System.IO.File.Open("../../../../Database/StackOverflow2010.dacpac", System.IO.FileMode.Open);
         using DacPackage dacPackage = DacPackage.Load(dacpacStream);
@@ -74,14 +109,14 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
             System.IO.File.WriteAllText(deployScriptPath, deployScriptContent);
             await ReadSqlDeployScriptCopyAndExecInDockerContainerAsync(deployScriptContent);
         }
-        catch(Exception ex)
+        catch
         {
             throw;
         }
 
     }
 
-    private async Task ReadSqlDeployScriptCopyAndExecInDockerContainerAsync(string deployScript = null)
+    private async Task ReadSqlDeployScriptCopyAndExecInDockerContainerAsync(string? deployScript = null)
     {
         if (deployScript == null)
         {
