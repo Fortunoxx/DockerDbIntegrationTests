@@ -50,14 +50,10 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
 
         if (useDacPac)
         {
-            var dbName = "TestDB";
             var builder = new SqlConnectionStringBuilder(connectionString);
+            FillDbFromDacpac(builder);
 
-            FillDbFromDacpac(builder, dbName);
-
-            builder.InitialCatalog = dbName;
-            var connection = new SqlConnection(builder.ConnectionString);
-            var evolveDacPac = new EvolveDb.Evolve(connection, msg => Debug.WriteLine(msg))
+            var evolveDacPac = new EvolveDb.Evolve(new SqlConnection(builder.ConnectionString), msg => Debug.WriteLine(msg))
             {
                 Locations = new [] { PathToTestData, }
             };
@@ -72,7 +68,7 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
         evolve.Migrate();
     }
 
-    private void FillDbFromDacpac(SqlConnectionStringBuilder connectionStringBuilder, string databaseName)
+    private void FillDbFromDacpac(SqlConnectionStringBuilder connectionStringBuilder, string databaseName = "master")
     {
         var arguments = new[] {
             "SqlPackage",
