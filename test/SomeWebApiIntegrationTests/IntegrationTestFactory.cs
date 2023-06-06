@@ -75,6 +75,7 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
     private void FillDbFromDacpac(SqlConnectionStringBuilder connectionStringBuilder, string databaseName)
     {
         var arguments = new[] {
+            "SqlPackage",
             "/Action:Publish",
             "/SourceFile:\"../../../../Database/StackOverflow2010.dacpac\"",
             $"/TargetUser:{connectionStringBuilder.UserID}",
@@ -84,16 +85,15 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
             $"/TargetDatabaseName:{databaseName}",
         };
 
-        var process = new Process {
-            StartInfo = new ProcessStartInfo()
-            {
-                FileName = "SqlPackage",
-                Arguments = string.Join(" ", arguments),
-                UseShellExecute = false
-            }
+        var startInfo = new ProcessStartInfo()
+        {
+            FileName = "dotnet",
+            Arguments = string.Join(" ", arguments),
+            UseShellExecute = false
         };
-        process.Start();
-        process.WaitForExit();
+
+        using var process = Process.Start(startInfo);
+        process?.WaitForExit();
     }
 
     private async Task FillDbFromDacpac2()

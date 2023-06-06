@@ -21,8 +21,8 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Setup Sql Tools
-      run: dotnet tool install -g microsoft.sqlpackage
+    - name: Restore Dotnet Tools (SqlPackage)
+      run: dotnet tool restore
     - name: Test
       run: dotnet test --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Exclude="[*]SomeWebApi.Migrations.*"
     - name: Upload coverage to Codecov
