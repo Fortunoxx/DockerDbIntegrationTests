@@ -83,7 +83,7 @@ public class IntegrationTestFactory<TProgram, TDbContext1, TDbContext2> : WebApp
 
     private void FillFromDacFx(SqlConnectionStringBuilder connectionStringBuilder)
     {
-        using var dacpacStream = System.IO.File.Open("../../../../Database/StackOverflow2010.dacpac", System.IO.FileMode.Open);
+        using var dacpacStream = System.IO.File.OpenRead("../../../../Database/StackOverflow2010.dacpac");
         using DacPackage dacPackage = DacPackage.Load(dacpacStream);
        
         var dacService = new DacServices(connectionStringBuilder.ConnectionString);
@@ -125,7 +125,7 @@ public class IntegrationTestFactory<TProgram, TDbContext1, TDbContext2> : WebApp
 
     private async Task FillDbFromDacpac2()
     {
-        using var dacpacStream = System.IO.File.Open("../../../../Database/StackOverflow2010.dacpac", System.IO.FileMode.Open);
+        using var dacpacStream = System.IO.File.OpenRead("../../../../Database/StackOverflow2010.dacpac");
         using DacPackage dacPackage = DacPackage.Load(dacpacStream);
 
         var dacService = new DacServices(_container.GetConnectionString());
