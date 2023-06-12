@@ -21,13 +21,13 @@ public class StartProcessCommandConsumer : IConsumer<IStartProcessCommand>
     public async Task Consume(ConsumeContext<IStartProcessCommand> context)
     {
         var builder = new RoutingSlipBuilder(NewId.NextGuid());
-        builder.AddActivity("StartProcess", courierService.GetActivityAddress<ProcessActivity, ProcessActivityArguments>(), new
+        builder.AddActivity(nameof(ProcessActivity), courierService.GetActivityAddress<ProcessActivity, ProcessActivityArguments>(), new
         {
             ProcessName = context.Message.ProcessName,
             Id = context.Message.Id
         });
 
-        await builder.AddSubscription(context.SourceAddress, RoutingSlipEvents.ActivityFaulted, RoutingSlipEventContents.None, "StartProcess",
+        await builder.AddSubscription(context.SourceAddress, RoutingSlipEvents.ActivityFaulted, RoutingSlipEventContents.None, nameof(ProcessActivity),
             x => x.Send<StartProcessFailed>(new { context.Message.Id, context.Message.ProcessName, }));
 
         var routingSlip = builder.Build();

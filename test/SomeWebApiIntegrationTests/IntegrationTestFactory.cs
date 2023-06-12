@@ -1,6 +1,7 @@
 namespace SomeWebApiIntegrationTests;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,8 +17,8 @@ using Microsoft.SqlServer.Dac;
 using Testcontainers.MsSql;
 using Xunit;
 
-public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactory<TProgram>, IAsyncLifetime
-    where TProgram : class where TDbContext : DbContext
+public class IntegrationTestFactory<TProgram, TDbContext1, TDbContext2> : WebApplicationFactory<TProgram>, IAsyncLifetime
+    where TProgram : class where TDbContext1 : DbContext where TDbContext2 : DbContext
 {
     private const string PathToMigrations = "../../../../Database/Migrations";
     private const string PathToTestData = "../../../../Database/SeedData";
@@ -27,11 +28,22 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        var connectionStringBuilder = new SqlConnectionStringBuilder(_container.GetConnectionString()); // get ip, port
+        connectionStringBuilder.InitialCatalog = "TestDB";
+        var connectionString1 = connectionStringBuilder.ConnectionString;
+        connectionStringBuilder.InitialCatalog = "AnotherDB";
+        var connectionString2 = connectionStringBuilder.ConnectionString;
+
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveDbContext<TDbContext>();
-            services.AddDbContext<TDbContext>(options => options.UseSqlServer(_container.GetConnectionString()));
-            services.EnsureDbCreated<TDbContext>();
+            services.RemoveDbContext<TDbContext1>();
+            services.AddDbContext<TDbContext1>(options => options.UseSqlServer(connectionString1));
+            services.EnsureDbCreated<TDbContext1>();
+
+            services.RemoveDbContext<TDbContext2>();
+            services.AddDbContext<TDbContext2>(options => options.UseSqlServer(connectionString2));
+            services.EnsureDbCreated<TDbContext2>();
+
             services.AddMassTransitTestHarness();
         });
     }
@@ -51,21 +63,40 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
         if (useDacPac)
         {
             var builder = new SqlConnectionStringBuilder(connectionString);
-            FillDbFromDacpac(builder);
-
+            builder.InitialCatalog = "TestDB";
+            // FillDbFromDacpac(builder);
+            FillFromDacFx(builder);
             var evolveDacPac = new EvolveDb.Evolve(new SqlConnection(builder.ConnectionString), msg => Debug.WriteLine(msg))
             {
-                Locations = new [] { PathToTestData, }
+                Locations = new[] { PathToTestData, }
             };
             evolveDacPac.Migrate();
             return;
         }
-        
+
         var evolve = new EvolveDb.Evolve(new SqlConnection(connectionString), msg => Debug.WriteLine(msg))
         {
             Locations = new[] { PathToMigrations, PathToTestData }
         };
         evolve.Migrate();
+    }
+
+    private void FillFromDacFx(SqlConnectionStringBuilder connectionStringBuilder)
+    {
+        using var dacpacStream = System.IO.File.Open("../../../../Database/StackOverflow2010.dacpac", System.IO.FileMode.Open);
+        using DacPackage dacPackage = DacPackage.Load(dacpacStream);
+       
+        var dacService = new DacServices(connectionStringBuilder.ConnectionString);
+
+        try
+        {
+            var dacDeployOptions = new DacDeployOptions { IgnorePermissions = true, };
+            dacService.Deploy(dacPackage, connectionStringBuilder.InitialCatalog, true, dacDeployOptions);
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
     }
 
     private void FillDbFromDacpac(SqlConnectionStringBuilder connectionStringBuilder, string databaseName = "master")
@@ -109,7 +140,6 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
         {
             throw;
         }
-
     }
 
     private async Task ReadSqlDeployScriptCopyAndExecInDockerContainerAsync(string? deployScript = null)

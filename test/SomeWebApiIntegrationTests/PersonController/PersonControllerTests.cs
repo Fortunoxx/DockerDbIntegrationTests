@@ -10,11 +10,11 @@ using SomeWebApi.Database;
 using Newtonsoft.Json;
 using System.Net.Mime;
 
-public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
+public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext>>
 {
-    private readonly IntegrationTestFactory<Program, SqlServerContext> _factory;
+    private readonly IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext> _factory;
 
-    public PersonControllerTests(IntegrationTestFactory<Program, SqlServerContext> factory)
+    public PersonControllerTests(IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext> factory)
     {
         _factory = factory;
     }

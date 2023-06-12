@@ -7,11 +7,11 @@ using SomeWebApi.Database;
 using System.Net.Http;
 using System.Net.Mime;
 
-public sealed class ProcessControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
+public sealed class ProcessControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext>>
 {
-    private readonly IntegrationTestFactory<Program, SqlServerContext> _factory;
+    private readonly IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext> _factory;
 
-    public ProcessControllerTests(IntegrationTestFactory<Program, SqlServerContext> factory)
+    public ProcessControllerTests(IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext> factory)
     {
         _factory = factory;
     }
