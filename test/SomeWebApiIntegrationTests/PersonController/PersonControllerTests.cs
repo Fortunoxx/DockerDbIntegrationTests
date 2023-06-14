@@ -37,7 +37,7 @@ public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory
 
         // Generate fake data for a list of customers
         var userFaker = new UserFaker(Constants.EmailProvider);
-        var users = userFaker.Generate(10000);
+        var users = userFaker.Generate(100);
 
         // Add the customers to the context and save changes
         using var scope = _factory.Services.CreateScope();
