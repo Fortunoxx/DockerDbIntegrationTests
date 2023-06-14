@@ -27,4 +27,14 @@ public record User
 
     [DefaultValue(0)]
     public int Views { get; init; }
+
+    public string Location { get; init; }
+
+    public string WebsiteUrl { get; init; }
+
+    public string AboutMe { get; init; }
+
+    public string EmailHash { get; init; }
+
+    public int Age { get; init; }
 }

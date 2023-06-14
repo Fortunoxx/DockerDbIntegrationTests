@@ -1,7 +1,6 @@
 namespace SomeWebApiIntegrationTests;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,9 +21,8 @@ public class IntegrationTestFactory<TProgram, TDbContext1, TDbContext2> : WebApp
 {
     private const string PathToMigrations = "../../../../Database/Migrations";
     private const string PathToTestData = "../../../../Database/SeedData";
-    private readonly MsSqlContainer _container = new MsSqlBuilder().WithImage("mcr.microsoft.com/mssql/server:2022-latest").Build();
-
     private readonly string deployScriptPath = "../../../../Database/data/deployment_script.temp.sql";
+    private readonly MsSqlContainer _container = new MsSqlBuilder().WithImage("mcr.microsoft.com/mssql/server:2022-latest").Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -68,7 +66,7 @@ public class IntegrationTestFactory<TProgram, TDbContext1, TDbContext2> : WebApp
             FillFromDacFx(builder);
             var evolveDacPac = new EvolveDb.Evolve(new SqlConnection(builder.ConnectionString), msg => Debug.WriteLine(msg))
             {
-                Locations = new[] { PathToTestData, }
+                // Locations = new[] { PathToTestData, }
             };
             evolveDacPac.Migrate();
             return;
