@@ -9,14 +9,41 @@ using FluentAssertions;
 using SomeWebApi.Database;
 using Newtonsoft.Json;
 using System.Net.Mime;
+using AutoBogus;
+using AutoBogus.Conventions;
+using SomeWebApiIntegrationTests.FakeData;
+using Microsoft.Extensions.DependencyInjection;
 
-public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext>>
+public sealed class PersonControllerTests : IClassFixture<IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext>>
 {
-    private readonly IntegrationTestFactory<Program, SqlServerContext> _factory;
+    private readonly IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext> _factory;
 
-    public PersonControllerTests(IntegrationTestFactory<Program, SqlServerContext> factory)
+    public PersonControllerTests(IntegrationTestFactory<Program, SqlServerContext, AnotherSqlServerContext> factory)
     {
         _factory = factory;
+
+        // Create a new instance of the Faker class
+        AutoFaker.Configure(builder =>
+        {
+            builder.WithLocale("de");
+            builder.WithConventions(cfg =>
+            {
+                cfg.StreetName.Aliases("Street", "Strasse", "Straße");
+                cfg.PhoneNumber.Aliases("Phone", "Mobile", "Tel", "Telefon", "Fax", "Mobil", "Rufnummer");
+                cfg.ZipCode.Aliases("PostalCode", "PLZ", "Postleitzahl");
+            });
+            builder.WithSkip<User>(x => x.Id);
+        });
+
+        // Generate fake data for a list of customers
+        var userFaker = new UserFaker(Constants.EmailProvider);
+        var users = userFaker.Generate(100);
+
+        // Add the customers to the context and save changes
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<SqlServerContext>();
+        context.Users.AddRange(users);
+        var code = context.SaveChanges();
     }
 
     [Fact]

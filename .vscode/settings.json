@@ -18,5 +18,9 @@
         "titleBar.inactiveBackground": "#c5881b99",
         "titleBar.inactiveForeground": "#15202b99"
     },
-    "peacock.color": "#c5881b"
+    "peacock.color": "#c5881b",
+    "dataworkspace.excludedProjects": [
+        "src/Infrastructure/StackOverflow2010/StackOverflow2010/StackOverflow2010.sqlproj",
+        "StackOverflow2010/StackOverflow2010.sqlproj"
+    ]
 }
